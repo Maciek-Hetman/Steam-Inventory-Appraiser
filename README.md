@@ -11,10 +11,11 @@ PostgreSQL available at localhost:5433
 Frontend available at localhost:3000  
 
 ## To-do
-- [ ] Get data from steam and csfloat 
-- [ ] Make endpoint with required data only in backend (C#) 
-- [ ] Database API in backend (C#) 
-- [ ] XML and JSON schema
+- [ ] Backend
+    - [ ] Get data from steam and csfloat 
+    - [ ] Make endpoint with required data only in backend (C#) 
+    - [ ] Database API in backend (C#) 
+    - [ ] XML and JSON schema
 - [ ] Frontend:
     - [ ] Get Steam Profile ID or extract Profile ID from steamcommunity.com link from user
     - [ ] Save user profile and inventory to database

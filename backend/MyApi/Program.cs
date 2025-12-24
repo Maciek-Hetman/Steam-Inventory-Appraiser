@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
 
@@ -15,6 +16,21 @@ builder.Services.AddCors(options =>
         policy => policy.WithOrigins("http://localhost:3000")
                         .AllowAnyHeader()
                         .AllowAnyMethod());
+});
+
+// HttpClient for Steam
+builder.Services.AddHttpClient("SteamClient", client =>
+{
+    client.BaseAddress = new Uri("https://steamcommunity.com/");
+
+    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+    client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+    client.DefaultRequestHeaders.Add("Referer", "https://steamcommunity.com/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
+    client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
 });
 
 builder.Services.AddControllers();

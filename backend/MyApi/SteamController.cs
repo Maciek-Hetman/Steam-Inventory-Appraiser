@@ -63,7 +63,59 @@ namespace MyApi.Controllers
                 _logger.LogError(ex, "Error during inventory fetching");
                 return StatusCode(500, "Internal server error.");
             }
+        }
+    }
 
+    [ApiController]
+    [Route("api/value/steam")]
+    public class SteamValueController : ControllerBase
+    {
+        private readonly ISteamMarketService _steam;
+
+        public SteamValueController(ISteamMarketService steam)
+        {
+            _steam = steam;
+        }
+
+        [HttpGet("item")]
+        public async Task<IActionResult> GetItemValue([FromQuery(Name = "marketHashName")] string marketHashName)
+        {
+            var price = await _steam.GetItemPriceAsync(marketHashName);
+
+            if (price == null) return NotFound("Price not found.");
+
+            return Ok(new
+            {
+                marketHashName,
+                priceUsd = price
+            });
+        }
+
+        [HttpPost("inventory")]
+        public async Task<IActionResult> GetInventoryValue([FromBody] List<InventoryItem> inventory)
+        {
+            if (inventory == null || inventory.Count == 0) return BadRequest("Inventory is empty.");
+
+            var tasks = inventory.Select(async item =>
+            {
+                var price = await _steam.GetItemPriceAsync(item.MarketHashName);
+
+                return new
+                {
+                    item.MarketHashName,
+                    priceUsd = price
+                };
+            });
+
+            var results = await Task.WhenAll(tasks);
+
+            var total = results.Where(r => r.priceUsd.HasValue).Sum(r => r.priceUsd!.Value);
+
+            return Ok(new
+            {
+                totalValueUsd = total,
+                items = results
+            });
         }
     }
 }

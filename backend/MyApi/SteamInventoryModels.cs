@@ -61,4 +61,16 @@ namespace MyApi.Models
         [JsonPropertyName("marketable")]
         public int Marketable { get; set; }
     }
+
+    public class InventoryItem
+    {
+        public string MarketHashName { get; set; } = string.Empty;
+    }
+
+    public class SteamPriceResponse
+    {
+        public bool success { get; set; }
+        public string? lowest_price { get; set; }
+        public string? median_price { get; set; }
+    }
 }

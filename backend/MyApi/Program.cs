@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
+using MyApi;
 using MyApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,9 @@ builder.Services.AddHttpClient("SteamClient", client =>
     client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
     client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
 });
+
+// Pricing API
+builder.Services.AddHttpClient<ISteamMarketService, SteamMarketService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

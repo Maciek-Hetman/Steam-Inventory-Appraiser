@@ -50,6 +50,26 @@ services:
       - /app/node_modules
     depends_on:
       - api
+    
+  # Database migration service for .NET
+  migrate:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    working_dir: /src/backend/MyApi
+    volumes:
+      - ./backend:/src/backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=${DB_HOST};Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      ASPNETCORE_ENVIRONMENT: Development
+    command: >
+      bash -c "
+      dotnet restore &&
+      dotnet tool install --global dotnet-ef &&
+      export PATH=\"$PATH:/root/.dotnet/tools\" &&
+      dotnet ef database update
+      "
 
 volumes:
   postgres_data: 

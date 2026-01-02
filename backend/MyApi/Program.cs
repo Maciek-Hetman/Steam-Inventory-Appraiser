@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using MyApi;
 using MyApi.Data;
+using MyApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,42 +20,23 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
-// HttpClient for Steam
 builder.Services.AddHttpClient("SteamClient", client =>
 {
     client.BaseAddress = new Uri("https://steamcommunity.com/");
-
-    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-    client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-    client.DefaultRequestHeaders.Add("Referer", "https://steamcommunity.com/");
-    client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
-    client.DefaultRequestHeaders.Add("Connection", "keep-alive");
-    client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "empty");
-    client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "cors");
-    client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "same-origin");
+    client.DefaultRequestHeaders.Add(
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 });
 
-// Pricing API
-builder.Services.AddHttpClient<ISteamMarketService, SteamMarketService>();
+
+builder.Services.AddScoped<ISteamInventoryService, SteamInventoryService>();
+builder.Services.AddScoped<ISteamMarketService, SteamMarketService>();
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate(); 
-}
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 
 if (app.Environment.IsDevelopment())

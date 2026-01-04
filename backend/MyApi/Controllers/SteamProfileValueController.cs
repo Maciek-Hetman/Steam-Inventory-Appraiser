@@ -28,12 +28,9 @@ public class SteamProfileValueController : ControllerBase
     }
 
     // POST api/value/steam/profile
-    [HttpPost("profile")]
-    public async Task<IActionResult> ValueProfile([FromBody] string steamProfileUrl)
+    [HttpGet("profile")]
+    public async Task<IActionResult> ValueProfile([FromQuery] string steamId64)
     {
-        var steamId64 = await SteamProfileHelper.GetSteamId64Async(
-            steamProfileUrl, _http);
-
         if (steamId64 == null)
             return BadRequest("Invalid Steam profile URL.");
 

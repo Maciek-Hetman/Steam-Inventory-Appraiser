@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using MyApi;
 using MyApi.Data;
+using MyApi.Http;
 using MyApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,17 +21,21 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
+builder.Services.AddScoped<SteamRateLimitHandler>();
+
 builder.Services.AddHttpClient("SteamClient", client =>
 {
     client.BaseAddress = new Uri("https://steamcommunity.com/");
     client.DefaultRequestHeaders.Add(
         "User-Agent",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-});
+})
+.AddHttpMessageHandler<SteamRateLimitHandler>();
 
 
 builder.Services.AddScoped<ISteamInventoryService, SteamInventoryService>();
 builder.Services.AddScoped<ISteamMarketService, SteamMarketService>();
+builder.Services.AddScoped<IImportExportService, ImportExportService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

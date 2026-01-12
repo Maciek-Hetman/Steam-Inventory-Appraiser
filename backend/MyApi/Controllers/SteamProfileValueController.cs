@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
 using MyApi.Entities;
 using MyApi.Helpers;
@@ -71,14 +72,30 @@ public class SteamProfileValueController : ControllerBase
             .Where(i => i.ValueUsd.HasValue)
             .Sum(i => i.ValueUsd!.Value);
 
-        var valuation = new InventoryValuation
-        {
-            SteamId64 = steamId64,
-            TotalValueUsd = total,
-            Items = items
-        };
+        // Check if this Steam ID already exists
+        var existingValuation = await _db.InventoryValuations
+            .FirstOrDefaultAsync(v => v.SteamId64 == steamId64);
 
-        _db.InventoryValuations.Add(valuation);
+        if (existingValuation != null)
+        {
+            // Update existing valuation instead of creating duplicate
+            existingValuation.TotalValueUsd = total;
+            existingValuation.CreatedAt = DateTime.UtcNow;
+            existingValuation.Items = items;
+            _db.InventoryValuations.Update(existingValuation);
+        }
+        else
+        {
+            // Create new valuation
+            var valuation = new InventoryValuation
+            {
+                SteamId64 = steamId64,
+                TotalValueUsd = total,
+                Items = items
+            };
+            _db.InventoryValuations.Add(valuation);
+        }
+
         await _db.SaveChangesAsync();
 
         return Ok(new

@@ -27,8 +27,15 @@ public class SteamInventoryService : ISteamInventoryService
         _logger.LogInformation("Steam inventory URL: {Url}", client.BaseAddress + url);
 
         var response = await client.GetAsync(url);
+        
         if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError(
+                "Failed to fetch inventory for {SteamId}. Status: {StatusCode}",
+                steamId64,
+                response.StatusCode);
             return null;
+        }
 
         var json = await response.Content.ReadAsStringAsync();
 

@@ -7,10 +7,12 @@ namespace MyApi.Services;
 public class SteamMarketService : ISteamMarketService
 {
     private readonly IHttpClientFactory _http;
+    private readonly ILogger<SteamMarketService> _logger;
 
-    public SteamMarketService(IHttpClientFactory http)
+    public SteamMarketService(IHttpClientFactory http, ILogger<SteamMarketService> logger)
     {
         _http = http;
+        _logger = logger;
     }
 
     public async Task<decimal?> GetItemPriceAsync(string marketHashName)
@@ -28,8 +30,15 @@ public class SteamMarketService : ISteamMarketService
             $"market_hash_name={Uri.EscapeDataString(marketHashName)}";
 
         var response = await client.GetAsync(url);
+        
         if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning(
+                "Failed to fetch price for {MarketHashName}. Status: {StatusCode}",
+                marketHashName,
+                response.StatusCode);
             return null;
+        }
 
         var json = await response.Content.ReadAsStringAsync();
 

@@ -60,11 +60,16 @@ public class SteamProfileValueController : ControllerBase
 
             var price = await _market.GetItemPriceAsync(desc.MarketHashName);
 
+            // Skip items valued at $0.01 or less to avoid noise in responses
+            var itemValue = price.HasValue ? price * amount : null;
+            if (!itemValue.HasValue || itemValue.Value <= 0.01m)
+                continue;
+
             items.Add(new InventoryValuationItem
             {
                 MarketHashName = desc.MarketHashName,
                 Amount = amount,
-                ValueUsd = price.HasValue ? price * amount : null
+                ValueUsd = itemValue
             });
         }
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Xml.Serialization;
+using System.Linq;
 using MyApi.Entities;
 using MyApi.Models;
 
@@ -31,7 +32,9 @@ public class ImportExportService : IImportExportService
                 SteamId64 = v.SteamId64,
                 TotalValueUsd = v.TotalValueUsd,
                 CreatedAt = v.CreatedAt,
-                Items = v.Items.Select(i => new InventoryValuationItemExportDto
+                Items = v.Items
+                    .Where(i => !i.ValueUsd.HasValue || i.ValueUsd.Value > 0.01m)
+                    .Select(i => new InventoryValuationItemExportDto
                 {
                     MarketHashName = i.MarketHashName,
                     Amount = i.Amount,
@@ -58,7 +61,9 @@ public class ImportExportService : IImportExportService
                 SteamId64 = v.SteamId64,
                 TotalValueUsd = v.TotalValueUsd,
                 CreatedAt = v.CreatedAt,
-                Items = v.Items.Select(i => new InventoryValuationItemExportDto
+                Items = v.Items
+                    .Where(i => !i.ValueUsd.HasValue || i.ValueUsd.Value > 0.01m)
+                    .Select(i => new InventoryValuationItemExportDto
                 {
                     MarketHashName = i.MarketHashName,
                     Amount = i.Amount,

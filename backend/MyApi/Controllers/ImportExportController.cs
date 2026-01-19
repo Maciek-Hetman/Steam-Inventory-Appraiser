@@ -289,6 +289,38 @@ public class ImportExportController : ControllerBase
             return StatusCode(500, new { success = false, error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Reset database by deleting all inventory valuations
+    /// </summary>
+    [HttpDelete("reset")]
+    public async Task<IActionResult> ResetDatabase()
+    {
+        try
+        {
+            var count = await _db.InventoryValuations.CountAsync();
+            
+            if (count == 0)
+            {
+                return Ok(new { success = true, message = "Database is already empty", deletedCount = 0 });
+            }
+
+            _db.InventoryValuations.RemoveRange(_db.InventoryValuations);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Successfully deleted {count} valuations",
+                deletedCount = count
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting database");
+            return StatusCode(500, new { success = false, error = ex.Message });
+        }
+    }
 }
 
 public class ImportJsonRequest

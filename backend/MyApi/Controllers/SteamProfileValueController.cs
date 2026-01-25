@@ -28,7 +28,6 @@ public class SteamProfileValueController : ControllerBase
         _http = http;
     }
 
-    // POST api/value/steam/profile
     [HttpGet("profile")]
     public async Task<IActionResult> ValueProfile([FromQuery] string steamId64)
     {
@@ -60,7 +59,6 @@ public class SteamProfileValueController : ControllerBase
 
             var price = await _market.GetItemPriceAsync(desc.MarketHashName);
 
-            // Skip items valued at $0.01 or less to avoid noise in responses
             var itemValue = price.HasValue ? price * amount : null;
             if (!itemValue.HasValue || itemValue.Value <= 0.01m)
                 continue;
@@ -77,13 +75,11 @@ public class SteamProfileValueController : ControllerBase
             .Where(i => i.ValueUsd.HasValue)
             .Sum(i => i.ValueUsd!.Value);
 
-        // Check if this Steam ID already exists
         var existingValuation = await _db.InventoryValuations
             .FirstOrDefaultAsync(v => v.SteamId64 == steamId64);
 
         if (existingValuation != null)
         {
-            // Update existing valuation instead of creating duplicate
             existingValuation.TotalValueUsd = total;
             existingValuation.CreatedAt = DateTime.UtcNow;
             existingValuation.Items = items;
@@ -91,7 +87,6 @@ public class SteamProfileValueController : ControllerBase
         }
         else
         {
-            // Create new valuation
             var valuation = new InventoryValuation
             {
                 SteamId64 = steamId64,

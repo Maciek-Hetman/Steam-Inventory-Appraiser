@@ -22,21 +22,11 @@ function App() {
   const handleExport = async (format) => {
     setImportExportLoading(true);
     setImportExportMessage(null);
-    
     try {
       const res = await fetch(`http://localhost:5001/api/import-export/export/${format}`);
-      
-      if (!res.ok) {
-        throw new Error(`Export failed: ${res.status}`);
-      }
-      
+      if (!res.ok) throw new Error(`Export failed: ${res.status}`);
       const data = await res.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Export failed');
-      }
-      
-      // Create and download file
+      if (!data.success) throw new Error(data.error || 'Export failed');
       const blob = new Blob([data.data], { type: format === 'json' ? 'application/json' : 'application/xml' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -46,7 +36,6 @@ function App() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
       setImportExportMessage({ type: 'success', text: `Successfully exported ${data.count} valuations to ${format.toUpperCase()}` });
     } catch (err) {
       setImportExportMessage({ type: 'error', text: err.message });
@@ -58,31 +47,19 @@ function App() {
   const handleImport = async (file, format) => {
     setImportExportLoading(true);
     setImportExportMessage(null);
-    
     try {
       const content = await file.text();
-      
       const res = await fetch(`http://localhost:5001/api/import-export/import/${format}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          [format === 'json' ? 'jsonData' : 'xmlData']: content 
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [format === 'json' ? 'jsonData' : 'xmlData']: content }),
       });
-      
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || `Import failed: ${res.status}`);
       }
-      
       const data = await res.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Import failed');
-      }
-      
+      if (!data.success) throw new Error(data.error || 'Import failed');
       setImportExportMessage({ type: 'success', text: data.message });
     } catch (err) {
       setImportExportMessage({ type: 'error', text: err.message });
@@ -93,38 +70,19 @@ function App() {
 
   const handleFileUpload = (e, format) => {
     const file = e.target.files?.[0];
-    if (file) {
-      handleImport(file, format);
-    }
-    e.target.value = ''; // Reset input
+    if (file) handleImport(file, format);
+    e.target.value = '';
   };
 
   const handleResetDatabase = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL inventory valuations from the database? This action cannot be undone!')) {
-      return;
-    }
-    
+    if (!window.confirm('Are you sure you want to delete ALL inventory valuations from the database? This action cannot be undone!')) return;
     setImportExportLoading(true);
     setImportExportMessage(null);
-    
     try {
-      const res = await fetch('http://localhost:5001/api/import-export/reset', {
-        method: 'DELETE',
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Reset failed: ${res.status}`);
-      }
-      
+      const res = await fetch('http://localhost:5001/api/import-export/reset', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Reset failed');
       const data = await res.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Reset failed');
-      }
-      
       setImportExportMessage({ type: 'success', text: data.message });
-      // Clear current valuation display if any
       setValuation(null);
     } catch (err) {
       setImportExportMessage({ type: 'error', text: err.message });
@@ -138,18 +96,10 @@ function App() {
     setLoading(true);
     setError(null);
     setValuation(null);
-
-    // Extract Steam ID from profile URL or use direct ID
     const steamId64 = steamInput.trim().split('/').filter(Boolean).pop();
-
     try {
       const res = await fetch(`http://localhost:5001/api/value/steam/profile?steamId64=${encodeURIComponent(steamId64)}`);
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || `Server error: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
       setValuation(data);
     } catch (err) {
@@ -161,12 +111,12 @@ function App() {
 
   return (
     <div className="container">
-      <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-        {theme === 'dark' ? '☀️' : '🌙'}
+      <button className="theme-toggle" onClick={toggleTheme}>
+        {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
       </button>
       
       <header className="header">
-        <h1>🎮 Steam Inventory Appraiser</h1>
+        <h1>Steam Inventory Appraiser</h1>
         <p className="subtitle">Value your CS:GO inventory in seconds</p>
       </header>
 
@@ -182,17 +132,9 @@ function App() {
             disabled={loading}
           />
           <button type="submit" disabled={loading} className="search-button">
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Valuing...
-              </>
-            ) : (
-              'Value Inventory'
-            )}
+            {loading ? <><span className="spinner"></span> Valuing...</> : 'Value Inventory'}
           </button>
         </form>
-
         {loading && (
           <div className="loading-message">
             <p>Fetching inventory and calculating values...</p>
@@ -201,11 +143,7 @@ function App() {
         )}
       </div>
 
-      {error && (
-        <div className="error-box">
-          <strong>❌ Error:</strong> {error}
-        </div>
-      )}
+      {error && <div className="error-box"><strong>Error:</strong> {error}</div>}
 
       {valuation && (
         <div className="results">
@@ -217,95 +155,53 @@ function App() {
             <p className="steam-id">Steam ID: {valuation.steamId64}</p>
           </div>
 
-          {valuation.items && valuation.items.length > 0 ? (
-            <div className="items-section">
-              <h3>Valued Items ({valuation.items.length})</h3>
-              <div className="items-grid">
-                {valuation.items.map((item, index) => (
-                  <div key={index} className="item-card">
-                    <div className="item-name">{item.marketHashName}</div>
-                    <div className="item-value">
-                      ${item.valueUSD?.toFixed(2) || '0.00'}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="items-section">
+            <h3>Valued Items ({valuation.items?.length || 0})</h3>
+            <div className="items-grid">
+              {valuation.items?.map((item, index) => (
+                <div key={index} className="item-card">
+                  <div className="item-name">{item.marketHashName}</div>
+                  <div className="item-value">${item.valueUSD?.toFixed(2)}</div>
+                </div>
+              ))}
             </div>
-          ) : (
-            <div className="empty-state">
-              <p>No marketable items found in inventory</p>
-            </div>
-          )}
+          </div>
         </div>
       )}
 
       <div className="import-export-section">
         <h3>Import / Export Database</h3>
         <p className="import-export-description">Export all valuations or import previous data</p>
-        
         {importExportMessage && (
           <div className={`import-export-message ${importExportMessage.type}`}>
             {importExportMessage.text}
           </div>
         )}
-        
         <div className="import-export-grid">
           <div className="import-export-card">
-            <h4>📤 Export</h4>
+            <h4>Export</h4>
             <div className="button-group">
-              <button 
-                onClick={() => handleExport('json')} 
-                disabled={importExportLoading}
-                className="export-button"
-              >
-                Export JSON
-              </button>
-              <button 
-                onClick={() => handleExport('xml')} 
-                disabled={importExportLoading}
-                className="export-button"
-              >
-                Export XML
-              </button>
+              <button onClick={() => handleExport('json')} disabled={importExportLoading} className="export-button">Export JSON</button>
+              <button onClick={() => handleExport('xml')} disabled={importExportLoading} className="export-button">Export XML</button>
             </div>
           </div>
-          
           <div className="import-export-card">
-            <h4>📥 Import</h4>
+            <h4>Import</h4>
             <div className="button-group">
               <label className="import-button">
                 Import JSON
-                <input 
-                  type="file" 
-                  accept=".json"
-                  onChange={(e) => handleFileUpload(e, 'json')}
-                  disabled={importExportLoading}
-                  style={{ display: 'none' }}
-                />
+                <input type="file" accept=".json" onChange={(e) => handleFileUpload(e, 'json')} disabled={importExportLoading} style={{ display: 'none' }} />
               </label>
               <label className="import-button">
                 Import XML
-                <input 
-                  type="file" 
-                  accept=".xml"
-                  onChange={(e) => handleFileUpload(e, 'xml')}
-                  disabled={importExportLoading}
-                  style={{ display: 'none' }}
-                />
+                <input type="file" accept=".xml" onChange={(e) => handleFileUpload(e, 'xml')} disabled={importExportLoading} style={{ display: 'none' }} />
               </label>
             </div>
           </div>
         </div>
-        
         <div className="reset-section">
-          <button 
-            onClick={handleResetDatabase} 
-            disabled={importExportLoading}
-            className="reset-button"
-          >
-            🗑️ Reset Database
-          </button>
-          <p className="reset-warning">⚠️ Warning: This will permanently delete all stored inventory valuations</p>
+          <button onClick={handleResetDatabase} disabled={importExportLoading} className="reset-button">Reset Database</button>
+          <p className="reset-warning">Warning: This will permanently delete all stored inventory valuations</p>
         </div>
       </div>
 

@@ -24,9 +24,6 @@ public class ImportExportController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Export all inventory valuations to JSON format
-    /// </summary>
     [HttpGet("export/json")]
     public async Task<IActionResult> ExportToJson()
     {
@@ -52,9 +49,6 @@ public class ImportExportController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Export all inventory valuations to XML format
-    /// </summary>
     [HttpGet("export/xml")]
     public async Task<IActionResult> ExportToXml()
     {
@@ -80,9 +74,6 @@ public class ImportExportController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Export valuations for a specific Steam profile to JSON
-    /// </summary>
     [HttpGet("export/json/{steamId64}")]
     public async Task<IActionResult> ExportProfileToJson(string steamId64)
     {
@@ -112,9 +103,6 @@ public class ImportExportController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Export valuations for a specific Steam profile to XML
-    /// </summary>
     [HttpGet("export/xml/{steamId64}")]
     public async Task<IActionResult> ExportProfileToXml(string steamId64)
     {
@@ -144,9 +132,6 @@ public class ImportExportController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Import inventory valuations from JSON
-    /// </summary>
     [HttpPost("import/json")]
     public async Task<IActionResult> ImportFromJson([FromBody] ImportJsonRequest request)
     {
@@ -164,13 +149,11 @@ public class ImportExportController : ControllerBase
 
             foreach (var dto in dtos)
             {
-                // Check if this Steam ID already exists
                 var existingValuation = await _db.InventoryValuations
                     .FirstOrDefaultAsync(v => v.SteamId64 == dto.SteamId64);
 
                 if (existingValuation != null)
                 {
-                    // Update existing valuation instead of creating duplicate
                     existingValuation.TotalValueUsd = dto.TotalValueUsd;
                     existingValuation.CreatedAt = dto.CreatedAt;
                     existingValuation.Items = dto.Items.Select(i => new InventoryValuationItem
@@ -183,7 +166,6 @@ public class ImportExportController : ControllerBase
                 }
                 else
                 {
-                    // Create new valuation
                     var valuation = new InventoryValuation
                     {
                         SteamId64 = dto.SteamId64,
@@ -217,9 +199,6 @@ public class ImportExportController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Import inventory valuations from XML
-    /// </summary>
     [HttpPost("import/xml")]
     public async Task<IActionResult> ImportFromXml([FromBody] ImportXmlRequest request)
     {
@@ -237,13 +216,11 @@ public class ImportExportController : ControllerBase
 
             foreach (var dto in dtos)
             {
-                // Check if this Steam ID already exists
                 var existingValuation = await _db.InventoryValuations
                     .FirstOrDefaultAsync(v => v.SteamId64 == dto.SteamId64);
 
                 if (existingValuation != null)
                 {
-                    // Update existing valuation instead of creating duplicate
                     existingValuation.TotalValueUsd = dto.TotalValueUsd;
                     existingValuation.CreatedAt = dto.CreatedAt;
                     existingValuation.Items = dto.Items.Select(i => new InventoryValuationItem
@@ -256,7 +233,6 @@ public class ImportExportController : ControllerBase
                 }
                 else
                 {
-                    // Create new valuation
                     var valuation = new InventoryValuation
                     {
                         SteamId64 = dto.SteamId64,
@@ -290,9 +266,6 @@ public class ImportExportController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Reset database by deleting all inventory valuations
-    /// </summary>
     [HttpDelete("reset")]
     public async Task<IActionResult> ResetDatabase()
     {

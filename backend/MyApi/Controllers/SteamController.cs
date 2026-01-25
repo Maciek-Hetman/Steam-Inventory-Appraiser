@@ -14,7 +14,6 @@ public class SteamController : ControllerBase
         _inventory = inventory;
     }
 
-    // GET api/steam/inventory/{steamId64}
     [HttpGet("inventory/{steamId64}")]
     public async Task<IActionResult> GetInventory(
         string steamId64,

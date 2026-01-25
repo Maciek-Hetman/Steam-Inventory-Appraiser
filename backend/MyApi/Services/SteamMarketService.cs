@@ -22,7 +22,6 @@ public class SteamMarketService : ISteamMarketService
 
         var client = _http.CreateClient("SteamClient");
 
-        // Steam Community Market
         var url =
             $"market/priceoverview/?" +
             $"currency=1&" + // USD
